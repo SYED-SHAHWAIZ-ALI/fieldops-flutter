@@ -1,18 +1,14 @@
-Replace only these files in your existing FieldOps project:
+FieldOps login branding update - changed files only
 
-lib/features/activity/presentation/activity_screen.dart
-lib/features/clients/presentation/client_detail_screen.dart
-lib/features/jobs/presentation/job_detail_screen.dart
-lib/features/profile/presentation/profile_screen.dart
+Replace/copy these paths into the ROOT of your existing fieldops project:
 
-This cleanup addresses the 20 analyzer findings reported after the professional feature package:
-- braces around flagged if statements
-- unused Job import removed
-- unnecessary toList() removed from spread
-- const constructor/list lint cleanup in Profile
+1. lib/features/auth/presentation/login_screen.dart
+2. pubspec.yaml
+3. assets/branding/fieldops_mark.png   (NEW FILE)
 
-After replacement run:
-  dart format .
-  flutter analyze
-  flutter test
-  flutter run -d chrome --web-port=8099
+What changed:
+- Replaced the generic location-pin block on Login with a professional FieldOps brand card.
+- Added the FieldOps logo mark as a local bundled asset (no network dependency).
+- Added FieldOps + Field Service Management lockup in a responsive navy/indigo header.
+- Added an asset error fallback to the previous location icon, so login still renders safely if the asset ever fails.
+- No auth logic, navigation, credentials, repositories, state, routes, tests, or business workflows were changed.

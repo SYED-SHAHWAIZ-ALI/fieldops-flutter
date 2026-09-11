@@ -1,25 +1,15 @@
-From the fieldops project root, run in this order:
+After extracting this ZIP into your existing fieldops project root, run from the INNER fieldops folder:
 
-1) dart format .
-2) flutter pub get
-3) flutter analyze
-4) flutter test
-5) flutter run -d chrome --web-port=8099
+dart format .
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d chrome --release
 
-Manual demo checks:
-- Login: field.agent@fieldops.com / demo123
-- Dashboard: no KPI overflow at 360/390/400px widths
-- Dashboard + button opens New Work Order
-- Jobs > New Job opens creation form
-- Create a job for today; confirm generated JOB-#### and Pending status
-- Confirm new job appears in Jobs, Today's Schedule, Activity, and client's Job History
-- Start the job -> In Progress
-- Complete checklist -> progress reaches 100% and activity logs checklist completion
-- Add technician note
-- Complete job with completion note -> Completed
-- Confirm Dashboard KPI updates and client Active Work Orders decreases
-- Search and filter jobs
-- Test light/dark mode
-- Verify no bottom-navigation overlap
+Expected:
+- flutter analyze: No issues found!
+- flutter test: All tests passed!
+- Login screen shows the FieldOps branded header/logo.
+- Existing login credentials and all application workflows remain unchanged.
 
-If flutter analyze/test reports anything, copy the full terminal output back into ChatGPT before pushing the final commit.
+Then test at Chrome responsive viewport 390 x 844 before deployment.
