@@ -68,8 +68,11 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                         const SizedBox(height: AppSpacing.sm),
                     itemBuilder: (context, index) {
                       final client = clients[index];
+                      final liveStats =
+                          ref.watch(clientLiveJobStatsProvider(client.id));
                       return ClientCard(
                         client: client,
+                        activeJobs: liveStats.active,
                         onTap: () => context.push('/clients/${client.id}'),
                       );
                     },

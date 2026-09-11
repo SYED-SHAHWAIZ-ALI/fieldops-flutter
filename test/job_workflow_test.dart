@@ -11,6 +11,35 @@ void main() {
       repository = MockJobRepository();
     });
 
+    test('creating a work order generates a pending job with audit metadata',
+        () async {
+      final before = await repository.getJobs();
+      final created = await repository.createJob(
+        CreateJobInput(
+          title: 'AC Compressor Inspection',
+          description: 'Inspect compressor condition and cooling performance.',
+          clientId: 'CLI-001',
+          clientName: 'Apex Industries',
+          contactName: 'Ahmed Raza',
+          contactPhone: '+92 300 1234567',
+          address: 'Gulshan-e-Iqbal, Karachi',
+          scheduledDate: DateTime.now(),
+          scheduledTime: '11:00 AM',
+          estimatedDuration: '2 hours',
+          priority: JobPriority.high,
+          assignedTechnician: 'Alex Morgan',
+        ),
+      );
+
+      final after = await repository.getJobs();
+      expect(after.length, before.length + 1);
+      expect(created.id, startsWith('JOB-'));
+      expect(created.status, JobStatus.pending);
+      expect(created.clientName, 'Apex Industries');
+      expect(created.checklist, isNotEmpty);
+      expect(created.activity.last.description, 'Work order created');
+    });
+
     test('a pending job can be started and becomes in progress', () async {
       final jobs = await repository.getJobs();
       final pendingJob = jobs.firstWhere((j) => j.status == JobStatus.pending);

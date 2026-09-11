@@ -55,6 +55,13 @@ class JobsController extends StateNotifier<JobsState> {
     }
   }
 
+  Future<Job> createJob(CreateJobInput input) async {
+    final repo = ref.read(jobRepositoryProvider);
+    final created = await repo.createJob(input);
+    state = state.copyWith(jobs: [created, ...state.jobs]);
+    return created;
+  }
+
   Future<void> startJob(String id) async {
     final repo = ref.read(jobRepositoryProvider);
     final updated = await repo.startJob(id);

@@ -24,7 +24,9 @@ class MockJobRepository implements JobRepository {
   Future<List<Job>> searchJobs(String query) async {
     await Future.delayed(const Duration(milliseconds: 300));
     final q = query.trim().toLowerCase();
-    if (q.isEmpty) return List.unmodifiable(_jobs);
+    if (q.isEmpty) {
+      return List.unmodifiable(_jobs);
+    }
     return _jobs.where((j) {
       return j.title.toLowerCase().contains(q) ||
           j.clientName.toLowerCase().contains(q) ||
@@ -34,10 +36,92 @@ class MockJobRepository implements JobRepository {
   }
 
   @override
+  Future<Job> createJob(CreateJobInput input) async {
+    await Future.delayed(const Duration(milliseconds: 350));
+
+    if (input.title.trim().length < 3) {
+      throw JobValidationException('Enter a clear job title.');
+    }
+    if (input.description.trim().length < 10) {
+      throw JobValidationException('Add a short service description.');
+    }
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final scheduled = DateTime(
+      input.scheduledDate.year,
+      input.scheduledDate.month,
+      input.scheduledDate.day,
+    );
+    if (scheduled.isBefore(today)) {
+      throw JobValidationException('Scheduled date cannot be in the past.');
+    }
+
+    var maxNumber = 1000;
+    for (final job in _jobs) {
+      final match = RegExp(r'\d+').firstMatch(job.id);
+      final number = int.tryParse(match?.group(0) ?? '');
+      if (number != null && number > maxNumber) {
+        maxNumber = number;
+      }
+    }
+    final id = 'JOB-${(maxNumber + 1).toString().padLeft(4, '0')}';
+
+    final checklist = [
+      ChecklistItem(
+        id: '$id-check-1',
+        label: 'Confirm customer/site access',
+      ),
+      ChecklistItem(
+        id: '$id-check-2',
+        label: 'Inspect equipment and record condition',
+      ),
+      ChecklistItem(
+        id: '$id-check-3',
+        label: 'Complete planned service work',
+      ),
+      ChecklistItem(
+        id: '$id-check-4',
+        label: 'Confirm site is safe and customer is updated',
+      ),
+    ];
+
+    final created = Job(
+      id: id,
+      title: input.title.trim(),
+      description: input.description.trim(),
+      clientId: input.clientId,
+      clientName: input.clientName,
+      contactName: input.contactName,
+      contactPhone: input.contactPhone,
+      address: input.address,
+      scheduledDate: scheduled,
+      scheduledTime: input.scheduledTime,
+      estimatedDuration: input.estimatedDuration,
+      priority: input.priority,
+      status: JobStatus.pending,
+      checklist: checklist,
+      activity: [
+        JobActivityEntry(
+          id: 'act-${now.millisecondsSinceEpoch}',
+          description: 'Work order created',
+          timestamp: now,
+        ),
+      ],
+      assignedTechnician: input.assignedTechnician,
+    );
+
+    _jobs.insert(0, created);
+    return created;
+  }
+
+  @override
   Future<Job> startJob(String id) async {
     await Future.delayed(const Duration(milliseconds: 400));
     final index = _jobs.indexWhere((j) => j.id == id);
-    if (index == -1) throw JobNotFoundException(id);
+    if (index == -1) {
+      throw JobNotFoundException(id);
+    }
     final job = _jobs[index];
     if (job.status != JobStatus.pending) {
       throw JobValidationException('Only pending jobs can be started.');
@@ -61,7 +145,9 @@ class MockJobRepository implements JobRepository {
   Future<Job> completeJob(String id, {required String completionNote}) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final index = _jobs.indexWhere((j) => j.id == id);
-    if (index == -1) throw JobNotFoundException(id);
+    if (index == -1) {
+      throw JobNotFoundException(id);
+    }
     final job = _jobs[index];
 
     if (job.status != JobStatus.inProgress) {
@@ -105,7 +191,9 @@ class MockJobRepository implements JobRepository {
   Future<Job> addJobNote(String id, String note) async {
     await Future.delayed(const Duration(milliseconds: 250));
     final index = _jobs.indexWhere((j) => j.id == id);
-    if (index == -1) throw JobNotFoundException(id);
+    if (index == -1) {
+      throw JobNotFoundException(id);
+    }
     if (note.trim().isEmpty) {
       throw JobValidationException('Note cannot be empty.');
     }
@@ -137,12 +225,34 @@ class MockJobRepository implements JobRepository {
       String id, String checklistItemId, bool isDone) async {
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _jobs.indexWhere((j) => j.id == id);
-    if (index == -1) throw JobNotFoundException(id);
+    if (index == -1) {
+      throw JobNotFoundException(id);
+    }
     final job = _jobs[index];
+    final wasComplete = job.checklist
+        .where((item) => item.isRequired)
+        .every((item) => item.isDone);
     final updatedChecklist = job.checklist
         .map((c) => c.id == checklistItemId ? c.copyWith(isDone: isDone) : c)
         .toList();
-    final updated = job.copyWith(checklist: updatedChecklist);
+    final isComplete = updatedChecklist
+        .where((item) => item.isRequired)
+        .every((item) => item.isDone);
+
+    final activity = [...job.activity];
+    if (!wasComplete && isComplete) {
+      final now = DateTime.now();
+      activity.add(JobActivityEntry(
+        id: 'act-${now.millisecondsSinceEpoch}',
+        description: 'Service checklist completed',
+        timestamp: now,
+      ));
+    }
+
+    final updated = job.copyWith(
+      checklist: updatedChecklist,
+      activity: activity,
+    );
     _jobs[index] = updated;
     return updated;
   }
@@ -151,7 +261,9 @@ class MockJobRepository implements JobRepository {
   Future<Job> addAttachment(String id, String path) async {
     await Future.delayed(const Duration(milliseconds: 200));
     final index = _jobs.indexWhere((j) => j.id == id);
-    if (index == -1) throw JobNotFoundException(id);
+    if (index == -1) {
+      throw JobNotFoundException(id);
+    }
     final job = _jobs[index];
     final now = DateTime.now();
     final updated = job.copyWith(

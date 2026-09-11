@@ -7,6 +7,7 @@ abstract class JobRepository {
   Future<List<Job>> getJobs();
   Future<Job?> getJobById(String id);
   Future<List<Job>> searchJobs(String query);
+  Future<Job> createJob(CreateJobInput input);
   Future<Job> startJob(String id);
   Future<Job> completeJob(String id, {required String completionNote});
   Future<Job> addJobNote(String id, String note);

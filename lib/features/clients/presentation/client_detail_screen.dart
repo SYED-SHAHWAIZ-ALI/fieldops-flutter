@@ -6,7 +6,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/status_chip.dart';
-import '../../jobs/domain/job.dart';
 import '../../jobs/presentation/jobs_provider.dart';
 import 'clients_provider.dart';
 
@@ -29,6 +28,7 @@ class ClientDetailScreen extends ConsumerWidget {
         .jobs
         .where((j) => j.clientId == clientId)
         .toList();
+    final liveStats = ref.watch(clientLiveJobStatsProvider(clientId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Client Details')),
@@ -59,8 +59,8 @@ class ClientDetailScreen extends ConsumerWidget {
                       icon: Icons.call_outlined,
                       label: 'Call',
                       accent: AppColors.success,
-                      onTap: () => _feedback(
-                          context, 'Calling ${client.contactName}'),
+                      onTap: () =>
+                          _feedback(context, 'Calling ${client.contactName}'),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     _ActionTile(
@@ -94,11 +94,18 @@ class ClientDetailScreen extends ConsumerWidget {
                       _Row(label: 'Phone', value: client.phone),
                       _Row(label: 'Email', value: client.email),
                       _Row(label: 'Address', value: client.address),
-                      _Row(label: 'Active Jobs', value: '${client.activeJobs}'),
                       _Row(
-                          label: 'Completed Jobs',
-                          value: '${client.completedJobs}',
-                          isLast: true),
+                          label: 'Active Work Orders',
+                          value: '${liveStats.active}'),
+                      _Row(
+                        label: 'Completed in Demo',
+                        value: '${liveStats.completedInDemo}',
+                      ),
+                      _Row(
+                        label: 'Historical Completed',
+                        value: '${client.completedJobs}',
+                        isLast: true,
+                      ),
                     ],
                   ),
                 ),

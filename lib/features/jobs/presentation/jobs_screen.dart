@@ -32,37 +32,60 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
     final activeFilter = ref.watch(jobFilterProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Jobs')),
+      appBar: AppBar(
+        title: const Text('Jobs'),
+        actions: [
+          IconButton(
+            tooltip: 'Create work order',
+            onPressed: () => context.push('/jobs/new'),
+            icon: const Icon(Icons.add_task_rounded),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/jobs/new'),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('New Job'),
+      ),
       body: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md, AppSpacing.sm, AppSpacing.md, 0),
+                AppSpacing.md,
+                AppSpacing.sm,
+                AppSpacing.md,
+                0,
+              ),
               child: TextField(
                 controller: _searchController,
-                onChanged: (v) =>
-                    ref.read(jobSearchQueryProvider.notifier).state = v,
+                onChanged: (value) {
+                  setState(() {});
+                  ref.read(jobSearchQueryProvider.notifier).state = value;
+                },
                 decoration: InputDecoration(
                   hintText: 'Search jobs, clients, locations…',
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: _searchController.text.isEmpty
                       ? null
                       : IconButton(
+                          tooltip: 'Clear search',
                           icon: const Icon(Icons.close_rounded),
                           onPressed: () {
                             _searchController.clear();
                             ref.read(jobSearchQueryProvider.notifier).state =
                                 '';
+                            setState(() {});
                           },
                         ),
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-           SizedBox(
+            SizedBox(
               height: 44,
-             child: ListView.separated(
+              child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 itemCount: JobFilter.values.length,
@@ -87,43 +110,49 @@ class _JobsScreenState extends ConsumerState<JobsScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Expanded(
-              child: Builder(builder: (context) {
-                if (jobsState.loadState == JobsLoadState.loading) {
-                  return const LoadingState();
-                }
-                if (jobsState.loadState == JobsLoadState.error) {
-                  return ErrorState(
-                    message: jobsState.errorMessage ?? 'Unable to load jobs.',
-                    onRetry: () =>
+              child: Builder(
+                builder: (context) {
+                  if (jobsState.loadState == JobsLoadState.loading) {
+                    return const LoadingState();
+                  }
+                  if (jobsState.loadState == JobsLoadState.error) {
+                    return ErrorState(
+                      message: jobsState.errorMessage ?? 'Unable to load jobs.',
+                      onRetry: () =>
+                          ref.read(jobsControllerProvider.notifier).loadJobs(),
+                    );
+                  }
+                  if (filteredJobs.isEmpty) {
+                    return const EmptyState(
+                      icon: Icons.search_off_rounded,
+                      title: 'No matching jobs',
+                      message: 'Try a different search term or filter.',
+                    );
+                  }
+                  return RefreshIndicator(
+                    onRefresh: () =>
                         ref.read(jobsControllerProvider.notifier).loadJobs(),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        0,
+                        AppSpacing.md,
+                        104,
+                      ),
+                      itemCount: filteredJobs.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: AppSpacing.sm),
+                      itemBuilder: (context, index) {
+                        final job = filteredJobs[index];
+                        return JobCard(
+                          job: job,
+                          onTap: () => context.push('/jobs/${job.id}'),
+                        );
+                      },
+                    ),
                   );
-                }
-                if (filteredJobs.isEmpty) {
-                  return const EmptyState(
-                    icon: Icons.search_off_rounded,
-                    title: 'No matching jobs',
-                    message: 'Try a different search term or filter.',
-                  );
-                }
-                return RefreshIndicator(
-                  onRefresh: () =>
-                      ref.read(jobsControllerProvider.notifier).loadJobs(),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md, 0, AppSpacing.md, AppSpacing.xxl),
-                    itemCount: filteredJobs.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (context, index) {
-                      final job = filteredJobs[index];
-                      return JobCard(
-                        job: job,
-                        onTap: () => context.push('/jobs/${job.id}'),
-                      );
-                    },
-                  ),
-                );
-              }),
+                },
+              ),
             ),
           ],
         ),

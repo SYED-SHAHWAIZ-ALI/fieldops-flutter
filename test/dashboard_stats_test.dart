@@ -18,6 +18,37 @@ Future<void> _primeJobs(ProviderContainer container) async {
 
 void main() {
   group('Dashboard statistics react to job completion', () {
+    test('creating a job for today updates dashboard counts immediately',
+        () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+
+      await _primeJobs(container);
+      final before = container.read(dashboardStatsProvider);
+      final controller = container.read(jobsControllerProvider.notifier);
+
+      await controller.createJob(
+        CreateJobInput(
+          title: 'Demo Site Inspection',
+          description: 'Perform a complete field inspection for the demo.',
+          clientId: 'CLI-003',
+          clientName: 'Nexus Solutions',
+          contactName: 'Farah Khan',
+          contactPhone: '+92 333 4455667',
+          address: 'Clifton, Karachi',
+          scheduledDate: DateTime.now(),
+          scheduledTime: '3:30 PM',
+          estimatedDuration: '1 hour',
+          priority: JobPriority.medium,
+          assignedTechnician: 'Alex Morgan',
+        ),
+      );
+
+      final after = container.read(dashboardStatsProvider);
+      expect(after.todaysJobs, before.todaysJobs + 1);
+      expect(after.pending, before.pending + 1);
+    });
+
     test(
         'completing a today job increases completed count and decreases pending',
         () async {

@@ -53,7 +53,7 @@ class ProfileScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 border: Border.all(color: theme.dividerColor),
               ),
-              child: Row(
+              child: const Row(
                 children: [
                   _StatItem(value: '142', label: 'Jobs Completed'),
                   _StatItem(value: '96%', label: 'Completion Rate'),
@@ -138,8 +138,8 @@ class ProfileScreen extends ConsumerWidget {
       _InfoRow('Employee ID', u.employeeId),
       _InfoRow('Job Title', u.title),
       _InfoRow('Email', u.email),
-      _InfoRow('Phone', '+92 300 1234567'),
-      _InfoRow('Region', 'Karachi, Pakistan'),
+      const _InfoRow('Phone', '+92 300 1234567'),
+      const _InfoRow('Region', 'Karachi, Pakistan'),
     ]);
   }
 
@@ -151,7 +151,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showSecurity(BuildContext context) {
-    _showInfoDialog(context, title: 'Security', rows: [
+    _showInfoDialog(context, title: 'Security', rows: const [
       _InfoRow('Password', '••••••••••'),
       _InfoRow('Last Changed', 'Aug 15, 2026'),
       _InfoRow('Two-Factor Auth', 'Disabled'),
@@ -161,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showSupport(BuildContext context) {
-    _showInfoDialog(context, title: 'Help & Support', rows: [
+    _showInfoDialog(context, title: 'Help & Support', rows: const [
       _InfoRow('Email', 'support@fieldops.com'),
       _InfoRow('Phone', '+92 21 111 222 333'),
       _InfoRow('Hours', 'Mon–Fri, 9 AM – 6 PM PKT'),

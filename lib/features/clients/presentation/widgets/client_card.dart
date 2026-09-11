@@ -6,8 +6,14 @@ import '../../domain/client.dart';
 class ClientCard extends StatelessWidget {
   final Client client;
   final VoidCallback onTap;
+  final int? activeJobs;
 
-  const ClientCard({super.key, required this.client, required this.onTap});
+  const ClientCard({
+    super.key,
+    required this.client,
+    required this.onTap,
+    this.activeJobs,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +55,9 @@ class ClientCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _Badge(label: '${client.activeJobs} active'),
+                      _Badge(
+                          label:
+                              '${activeJobs ?? client.activeJobs} active now'),
                       const SizedBox(width: 6),
                       _Badge(label: '${client.completedJobs} completed'),
                     ],

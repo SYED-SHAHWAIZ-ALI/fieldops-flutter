@@ -34,7 +34,9 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
   }
 
   void _showSnack(String message, {bool isError = false}) {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
@@ -53,21 +55,27 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
           e is JobValidationException ? e.message : 'Could not start job',
           isError: true);
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() => _busy = false);
+      }
     }
   }
 
   Future<void> _completeJob(Job job) async {
     String? validationError;
     while (true) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       final note = await showCompletionBottomSheet(
         context,
         title: 'Complete Job',
         description: 'Confirm the work is finished for ${job.id}.',
         validationError: validationError,
       );
-      if (note == null) return; // cancelled
+      if (note == null) {
+        return; // cancelled
+      }
       setState(() => _busy = true);
       try {
         await ref
@@ -106,10 +114,14 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   Future<void> _addNote(String jobId) async {
     final text = _noteController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty) {
+      return;
+    }
     try {
       await ref.read(jobsControllerProvider.notifier).addNote(jobId, text);
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       _noteController.clear();
       FocusScope.of(context).unfocus();
     } catch (e) {
@@ -121,7 +133,9 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
     try {
       final picker = ImagePicker();
       final file = await picker.pickImage(source: source, imageQuality: 80);
-      if (file == null) return; // user cancelled selection
+      if (file == null) {
+        return; // user cancelled selection
+      }
       await ref
           .read(jobsControllerProvider.notifier)
           .addAttachment(jobId, file.path);
@@ -163,24 +177,44 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
 
   IconData _activityIcon(String description) {
     final d = description.toLowerCase();
+    if (d.contains('created') || d.contains('assigned')) {
+      return Icons.add_task_rounded;
+    }
     if (d.contains('started') || d.contains('arrived')) {
       return Icons.play_circle_outline_rounded;
     }
-    if (d.contains('completed')) return Icons.check_circle_outline_rounded;
+    if (d.contains('completed')) {
+      return Icons.check_circle_outline_rounded;
+    }
     if (d.contains('photo') || d.contains('attached')) {
       return Icons.photo_camera_outlined;
     }
-    if (d.contains('note')) return Icons.edit_note_rounded;
-    if (d.contains('checklist')) return Icons.checklist_rounded;
+    if (d.contains('note')) {
+      return Icons.edit_note_rounded;
+    }
+    if (d.contains('checklist')) {
+      return Icons.checklist_rounded;
+    }
     return Icons.circle_notifications_outlined;
   }
 
   Color _activityAccent(String description) {
     final d = description.toLowerCase();
-    if (d.contains('completed')) return AppColors.success;
-    if (d.contains('started') || d.contains('arrived')) return AppColors.accentBlue;
-    if (d.contains('photo') || d.contains('attached')) return AppColors.warning;
-    if (d.contains('note') || d.contains('checklist')) return AppColors.indigo;
+    if (d.contains('created') || d.contains('assigned')) {
+      return AppColors.indigo;
+    }
+    if (d.contains('completed')) {
+      return AppColors.success;
+    }
+    if (d.contains('started') || d.contains('arrived')) {
+      return AppColors.accentBlue;
+    }
+    if (d.contains('photo') || d.contains('attached')) {
+      return AppColors.warning;
+    }
+    if (d.contains('note') || d.contains('checklist')) {
+      return AppColors.indigo;
+    }
     return AppColors.pending;
   }
 
@@ -237,6 +271,8 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(job.title, style: theme.textTheme.headlineSmall),
+            const SizedBox(height: AppSpacing.md),
+            _WorkflowProgress(status: job.status),
             const SizedBox(height: AppSpacing.lg),
             _InfoCard(job: job),
             const SizedBox(height: AppSpacing.lg),
@@ -256,8 +292,10 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                       child: Row(
                         children: [
                           Text(
-                            '${job.checklist.where((c) => c.isDone).length}/${job.checklist.length}',
-                            style: theme.textTheme.bodySmall,
+                            '${job.checklist.where((c) => c.isDone).length}/${job.checklist.length} complete',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
@@ -273,35 +311,32 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                                         job.checklist.length,
                                 minHeight: 6,
                                 backgroundColor: theme.dividerColor,
-                                valueColor:
-                                    const AlwaysStoppedAnimation<Color>(
-                                        AppColors.accentBlue),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                    AppColors.accentBlue),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ...job.checklist
-                      .map((item) => CheckboxListTile(
-                           value: item.isDone,
-                           onChanged: job.status == JobStatus.completed
-                               ? null
-                               : (checked) => ref
-                                   .read(jobsControllerProvider.notifier)
-                                   .updateChecklistItem(
-                                       job.id, item.id, checked ?? false),
-                           contentPadding: EdgeInsets.zero,
-                           controlAffinity: ListTileControlAffinity.leading,
-                           title: Text(item.label,
-                               style: theme.textTheme.bodyMedium),
-                           subtitle: item.isRequired && !item.isDone
-                               ? Text('Required',
-                                   style: theme.textTheme.bodySmall?.copyWith(
-                                       color: AppColors.warning, fontSize: 11))
-                               : null,
-                         ))
-                     .toList(),
+                  ...job.checklist.map((item) => CheckboxListTile(
+                        value: item.isDone,
+                        onChanged: job.status == JobStatus.completed
+                            ? null
+                            : (checked) => ref
+                                .read(jobsControllerProvider.notifier)
+                                .updateChecklistItem(
+                                    job.id, item.id, checked ?? false),
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title:
+                            Text(item.label, style: theme.textTheme.bodyMedium),
+                        subtitle: item.isRequired && !item.isDone
+                            ? Text('Required',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    color: AppColors.warning, fontSize: 11))
+                            : null,
+                      )),
                 ],
               ),
             ),
@@ -400,12 +435,17 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
                       children: [
                         for (var i = 0; i < job.activity.length; i++)
                           TimelineItem(
-                            icon: _activityIcon(job.activity[i].description),
-                            accent: _activityAccent(
-                                job.activity[i].description),
-                            title: job.activity[i].description,
-                            time: DateFormat('h:mm a')
-                                .format(job.activity[i].timestamp),
+                            icon: _activityIcon(job
+                                .activity[job.activity.length - 1 - i]
+                                .description),
+                            accent: _activityAccent(job
+                                .activity[job.activity.length - 1 - i]
+                                .description),
+                            title: job.activity[job.activity.length - 1 - i]
+                                .description,
+                            time: DateFormat('h:mm a').format(job
+                                .activity[job.activity.length - 1 - i]
+                                .timestamp),
                             isLast: i == job.activity.length - 1,
                           ),
                       ],
@@ -463,6 +503,88 @@ class _JobDetailScreenState extends ConsumerState<JobDetailScreen> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _WorkflowProgress extends StatelessWidget {
+  final JobStatus status;
+
+  const _WorkflowProgress({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final activeIndex = switch (status) {
+      JobStatus.pending => 0,
+      JobStatus.inProgress => 1,
+      JobStatus.completed => 2,
+    };
+    const labels = ['Assigned', 'In Progress', 'Completed'];
+    const icons = [
+      Icons.assignment_outlined,
+      Icons.handyman_outlined,
+      Icons.check_circle_outline_rounded,
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < labels.length; i++) ...[
+            Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i <= activeIndex
+                          ? theme.colorScheme.secondary.withValues(alpha: 0.14)
+                          : theme.dividerColor.withValues(alpha: 0.35),
+                    ),
+                    child: Icon(
+                      icons[i],
+                      size: 18,
+                      color: i <= activeIndex
+                          ? theme.colorScheme.secondary
+                          : theme.textTheme.bodySmall?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    labels[i],
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color:
+                          i <= activeIndex ? theme.colorScheme.secondary : null,
+                      fontWeight:
+                          i == activeIndex ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (i < labels.length - 1)
+              Expanded(
+                child: Container(
+                  height: 2,
+                  margin: const EdgeInsets.only(bottom: 22),
+                  color: i < activeIndex
+                      ? theme.colorScheme.secondary
+                      : theme.dividerColor,
+                ),
+              ),
+          ],
+        ],
       ),
     );
   }

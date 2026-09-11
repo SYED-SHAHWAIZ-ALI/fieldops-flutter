@@ -26,25 +26,49 @@ class _FeedEntry {
   });
 }
 
- IconData _iconFor(String description) {
+IconData _iconFor(String description) {
   final d = description.toLowerCase();
-  if (d.contains('started')) return Icons.play_circle_outline_rounded;
-  if (d.contains('completed')) return Icons.check_circle_outline_rounded;
+  if (d.contains('created') || d.contains('assigned')) {
+    return Icons.add_task_rounded;
+  }
+  if (d.contains('started')) {
+    return Icons.play_circle_outline_rounded;
+  }
+  if (d.contains('completed')) {
+    return Icons.check_circle_outline_rounded;
+  }
   if (d.contains('photo') || d.contains('attached')) {
     return Icons.photo_camera_outlined;
   }
-  if (d.contains('note')) return Icons.edit_note_rounded;
-  if (d.contains('arrived')) return Icons.person_pin_circle_outlined;
-  if (d.contains('checklist')) return Icons.checklist_rounded;
+  if (d.contains('note')) {
+    return Icons.edit_note_rounded;
+  }
+  if (d.contains('arrived')) {
+    return Icons.person_pin_circle_outlined;
+  }
+  if (d.contains('checklist')) {
+    return Icons.checklist_rounded;
+  }
   return Icons.circle_notifications_outlined;
 }
 
 Color _accentFor(String description) {
   final d = description.toLowerCase();
-  if (d.contains('completed')) return AppColors.success;
-  if (d.contains('started') || d.contains('arrived')) return AppColors.accentBlue;
-  if (d.contains('photo') || d.contains('attached')) return AppColors.warning;
-  if (d.contains('note') || d.contains('checklist')) return AppColors.indigo;
+  if (d.contains('created') || d.contains('assigned')) {
+    return AppColors.indigo;
+  }
+  if (d.contains('completed')) {
+    return AppColors.success;
+  }
+  if (d.contains('started') || d.contains('arrived')) {
+    return AppColors.accentBlue;
+  }
+  if (d.contains('photo') || d.contains('attached')) {
+    return AppColors.warning;
+  }
+  if (d.contains('note') || d.contains('checklist')) {
+    return AppColors.indigo;
+  }
   return AppColors.pending;
 }
 

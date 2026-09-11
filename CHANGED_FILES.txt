@@ -1,0 +1,18 @@
+Replace only these files in your existing FieldOps project:
+
+lib/features/activity/presentation/activity_screen.dart
+lib/features/clients/presentation/client_detail_screen.dart
+lib/features/jobs/presentation/job_detail_screen.dart
+lib/features/profile/presentation/profile_screen.dart
+
+This cleanup addresses the 20 analyzer findings reported after the professional feature package:
+- braces around flagged if statements
+- unused Job import removed
+- unnecessary toList() removed from spread
+- const constructor/list lint cleanup in Profile
+
+After replacement run:
+  dart format .
+  flutter analyze
+  flutter test
+  flutter run -d chrome --web-port=8099

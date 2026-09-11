@@ -9,6 +9,7 @@ import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/clients/presentation/client_detail_screen.dart';
 import '../../features/clients/presentation/clients_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
+import '../../features/jobs/presentation/create_job_screen.dart';
 import '../../features/jobs/presentation/job_detail_screen.dart';
 import '../../features/jobs/presentation/jobs_screen.dart';
 import '../../features/notifications/presentation/notifications_screen.dart';
@@ -43,6 +44,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/notifications',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/jobs/new',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const CreateJobScreen(),
       ),
       GoRoute(
         path: '/jobs/:id',

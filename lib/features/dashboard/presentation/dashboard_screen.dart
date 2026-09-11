@@ -33,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
           onRefresh: () => ref.read(jobsControllerProvider.notifier).loadJobs(),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(
-                AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xxl),
+                AppSpacing.md, AppSpacing.md, AppSpacing.md, 88),
             children: [
               Row(
                 children: [
@@ -50,10 +50,17 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  IconButton.filledTonal(
+                    tooltip: 'Create work order',
+                    onPressed: () => context.push('/jobs/new'),
+                    icon: const Icon(Icons.add_task_rounded),
+                  ),
+                  const SizedBox(width: 4),
                   Stack(
                     clipBehavior: Clip.none,
                     children: [
                       IconButton(
+                        tooltip: 'Notifications',
                         icon: const Icon(Icons.notifications_none_rounded),
                         onPressed: () => context.push('/notifications'),
                       ),
@@ -99,7 +106,7 @@ class DashboardScreen extends ConsumerWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   mainAxisSpacing: AppSpacing.sm,
                   crossAxisSpacing: AppSpacing.sm,
-                  childAspectRatio: 1.35,
+                  childAspectRatio: 1.2,
                   children: [
                     MetricCard(
                       label: "Today's Jobs",

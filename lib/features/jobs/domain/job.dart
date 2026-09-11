@@ -123,3 +123,35 @@ class Job {
     );
   }
 }
+
+/// Validated data required to create a new work order.
+/// The repository owns ID generation and creation metadata.
+class CreateJobInput {
+  final String title;
+  final String description;
+  final String clientId;
+  final String clientName;
+  final String contactName;
+  final String contactPhone;
+  final String address;
+  final DateTime scheduledDate;
+  final String scheduledTime;
+  final String estimatedDuration;
+  final JobPriority priority;
+  final String assignedTechnician;
+
+  const CreateJobInput({
+    required this.title,
+    required this.description,
+    required this.clientId,
+    required this.clientName,
+    required this.contactName,
+    required this.contactPhone,
+    required this.address,
+    required this.scheduledDate,
+    required this.scheduledTime,
+    required this.estimatedDuration,
+    required this.priority,
+    required this.assignedTechnician,
+  });
+}
